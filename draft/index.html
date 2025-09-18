@@ -1,0 +1,240 @@
+ // Phase elements
+  const setupPhase = document.getElementById('setup-phase');
+  const draftPhase = document.getElementById('draft-phase');
+  const resultsPhase = document.getElementById('results-phase');
+
+    // Start Draft button logic
+    startDraftBtn.onclick = function() {
+      setupValidationError.textContent = '';
+      if (teams.length < 2) {
+        setupValidationError.textContent = 'At least 2 teams are required.';
+        return;
+      }
+      if (participants.length < 2) {
+        setupValidationError.textContent = 'At least 2 participants are required.';
+        return;
+      }
+      // Hide setup, show draft
+      setupPhase.classList.add('hidden');
+      draftPhase.classList.remove('hidden');
+      // (Draft logic will be added here in the next step)
+    };
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting Hat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Sorting Hat</h1>
+    <p style="margin-top:0.5rem; font-size:1.1rem;">Team Maker Draft Application</p>
+  </header>
+  <main>
+    <!-- Setup Phase -->
+    <section id="setup-phase">
+      <h2>Setup</h2>
+      <div style="margin-bottom:2rem;">
+        <h3>Teams</h3>
+        <form id="team-form" autocomplete="off" style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="team-name" placeholder="Team name" required minlength="1" style="flex:1;" />
+          <button type="submit" style="background:var(--primary-blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.5rem;">Add Team</button>
+        </form>
+        <ul id="team-list" style="list-style:none;padding:0;margin-top:1rem;"></ul>
+        <div id="team-error" style="color:var(--accent);margin-top:0.5rem;"></div>
+      </div>
+      <div style="margin-bottom:2rem;">
+        <h3>Participants</h3>
+        <form id="participant-form" autocomplete="off" style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="participant-name" placeholder="Participant name" required minlength="1" style="flex:1;" />
+          <button type="submit" style="background:var(--primary-purple);color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.5rem;">Add Participant</button>
+        </form>
+        <ul id="participant-list" style="list-style:none;padding:0;margin-top:1rem;"></ul>
+        <div id="participant-error" style="color:var(--accent);margin-top:0.5rem;"></div>
+      </div>
+      <button id="start-draft" style="background:linear-gradient(90deg,var(--primary-blue),var(--primary-purple));color:#fff;border:none;padding:0.75rem 2rem;border-radius:0.75rem;font-size:1.1rem;">Start Draft</button>
+      <div id="setup-validation-error" style="color:var(--accent);margin-top:1rem;"></div>
+    </section>
+    <!-- Draft Phase -->
+    <section id="draft-phase" class="hidden">
+  <h2>Draft</h2>
+  <div id="draft-board" style="margin-bottom:1.5rem;"></div>
+  <div id="draft-progress" style="margin-bottom:1rem;font-weight:bold;"></div>
+  <button id="next-pick" style="background:var(--primary-blue);color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:0.6rem;font-size:1rem;">Next Pick</button>
+  <div id="draft-error" style="color:var(--accent);margin-top:1rem;"></div>
+    // Draft logic variables
+    let draftTeams = [];
+    let draftParticipants = [];
+    let draftAssignments = [];
+    let draftOrder = [];
+    let currentRound = 0;
+    let currentTeamIdx = 0;
+    let totalRounds = 0;
+
+    // Draft phase elements
+    const draftBoard = document.getElementById('draft-board');
+    const draftProgress = document.getElementById('draft-progress');
+    const nextPickBtn = document.getElementById('next-pick');
+    const draftError = document.getElementById('draft-error');
+
+    function shuffle(array) {
+      // Fisher-Yates shuffle
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startDraft() {
+      // Copy state
+      draftTeams = teams.map(name => ({ name, members: [] }));
+      draftParticipants = [...participants];
+      draftAssignments = [];
+      draftOrder = [];
+      currentRound = 1;
+      currentTeamIdx = 0;
+      draftError.textContent = '';
+
+      // Calculate fair distribution
+      const numTeams = draftTeams.length;
+      const numParticipants = draftParticipants.length;
+      const baseSize = Math.floor(numParticipants / numTeams);
+      const remainder = numParticipants % numTeams;
+      totalRounds = baseSize + (remainder > 0 ? 1 : 0);
+
+      // Build team pick order for each round
+      for (let r = 0; r < totalRounds; r++) {
+        for (let t = 0; t < numTeams; t++) {
+          // Only allow teams to pick if they haven't reached their max
+          const maxForThisTeam = baseSize + (t < remainder ? 1 : 0);
+          if (draftTeams[t].members.length < maxForThisTeam) {
+            draftOrder.push(t);
+          }
+        }
+      }
+      shuffle(draftParticipants);
+      renderDraftBoard();
+      renderDraftProgress();
+      nextPickBtn.disabled = false;
+    }
+
+    function renderDraftBoard() {
+      draftBoard.innerHTML = '';
+      draftTeams.forEach(team => {
+        const div = document.createElement('div');
+        div.style.marginBottom = '1rem';
+        div.style.background = 'linear-gradient(90deg, var(--primary-blue) 60%, var(--primary-purple) 100%)';
+        div.style.color = '#fff';
+        div.style.borderRadius = '0.7rem';
+        div.style.padding = '0.7rem 1rem';
+        div.innerHTML = `<strong>${team.name}</strong>: ${team.members.join(', ')}`;
+        draftBoard.appendChild(div);
+      });
+    }
+
+    function renderDraftProgress() {
+      const picksMade = draftTeams.reduce((sum, t) => sum + t.members.length, 0);
+      const totalPicks = draftParticipants.length + picksMade;
+      const teamName = draftTeams[draftOrder[0]] ? draftTeams[draftOrder[0]].name : '';
+      draftProgress.textContent = picksMade < totalPicks
+        ? `Round ${currentRound} – ${teamName}'s pick (${picksMade + 1} of ${totalPicks})`
+        : 'Draft complete!';
+    }
+
+    function doNextPick() {
+      if (draftParticipants.length === 0 || draftOrder.length === 0) {
+        nextPickBtn.disabled = true;
+        draftProgress.textContent = 'Draft complete!';
+        setTimeout(showResults, 1000);
+        return;
+      }
+      // Pick for current team
+      const teamIdx = draftOrder.shift();
+      // Randomly select a participant
+      const pickIdx = Math.floor(Math.random() * draftParticipants.length);
+      const pick = draftParticipants.splice(pickIdx, 1)[0];
+      draftTeams[teamIdx].members.push(pick);
+      renderDraftBoard();
+      renderDraftProgress();
+      // Advance round if all teams picked
+      if (draftOrder.length % draftTeams.length === 0) {
+        currentRound++;
+      }
+      if (draftParticipants.length === 0 || draftOrder.length === 0) {
+        nextPickBtn.disabled = true;
+        draftProgress.textContent = 'Draft complete!';
+        setTimeout(showResults, 1000);
+      }
+    }
+
+    function showResults() {
+      draftPhase.classList.add('hidden');
+      resultsPhase.classList.remove('hidden');
+      renderResults();
+    }
+
+    // Next Pick button
+    nextPickBtn.onclick = function() {
+      draftError.textContent = '';
+      doNextPick();
+    };
+
+    // Start draft when entering draft phase
+    const originalStartDraftBtnOnClick = startDraftBtn.onclick;
+    startDraftBtn.onclick = function() {
+      if (typeof originalStartDraftBtnOnClick === 'function') originalStartDraftBtnOnClick();
+      if (!setupPhase.classList.contains('hidden')) return;
+      startDraft();
+    };
+    </section>
+    <!-- Results Phase -->
+    <section id="results-phase" class="hidden">
+  <h2>Results</h2>
+  <div id="results-board" style="margin-bottom:2rem;"></div>
+  <button id="restart-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Restart</button>
+    // Results phase logic
+    const resultsBoard = document.getElementById('results-board');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function renderResults() {
+      resultsBoard.innerHTML = '';
+      draftTeams.forEach(team => {
+        const div = document.createElement('div');
+        div.style.marginBottom = '1rem';
+        div.style.background = 'linear-gradient(90deg, var(--primary-purple) 60%, var(--primary-blue) 100%)';
+        div.style.color = '#fff';
+        div.style.borderRadius = '0.7rem';
+        div.style.padding = '0.7rem 1rem';
+        div.innerHTML = `<strong>${team.name}</strong>: ${team.members.join(', ')}`;
+        resultsBoard.appendChild(div);
+      });
+    }
+
+    restartBtn.onclick = function() {
+      // Reset all state and return to setup
+      draftPhase.classList.add('hidden');
+      resultsPhase.classList.add('hidden');
+      setupPhase.classList.remove('hidden');
+      teams = [];
+      participants = [];
+      editingTeamIndex = null;
+      editingParticipantIndex = null;
+      teamNameInput.value = '';
+      participantNameInput.value = '';
+      teamForm.querySelector('button[type="submit"]').textContent = 'Add Team';
+      participantForm.querySelector('button[type="submit"]').textContent = 'Add Participant';
+      teamError.textContent = '';
+      participantError.textContent = '';
+      setupValidationError.textContent = '';
+      renderTeams();
+      renderParticipants();
+    };
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
