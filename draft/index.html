@@ -49,7 +49,16 @@
   <h2>Results</h2>
   <div id="results-board" style="margin-bottom:2rem;"></div>
   <button id="reshuffle-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Reshuffle Teams</button>
+  <button id="confirm-teams-btn" style="background:var(--accent);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Confirm Teams</button>
   <button id="restart-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Restart</button>
+  <!-- Team Randomizer Phase -->
+  <section id="team-randomizer-phase" class="hidden">
+    <h2>Team Randomizer</h2>
+    <div id="randomizer-board" style="margin-bottom:2rem;"></div>
+    <button id="randomize-team-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Randomize Next Team</button>
+    <div id="randomizer-result" style="margin-top:1.5rem;font-size:1.2rem;font-weight:bold;"></div>
+    <button id="randomizer-back-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.5rem 1.5rem;border-radius:0.7rem;font-size:1rem;margin-top:2rem;">Back to Results</button>
+  </section>
     </section>
   </main>
   <script src="app.js"></script>

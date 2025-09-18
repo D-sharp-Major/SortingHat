@@ -280,6 +280,56 @@ startDraftBtn.onclick = function() {
 const resultsBoard = document.getElementById('results-board');
 const restartBtn = document.getElementById('restart-btn');
 const reshuffleBtn = document.getElementById('reshuffle-btn');
+const confirmTeamsBtn = document.getElementById('confirm-teams-btn');
+
+// Team Randomizer phase elements
+const teamRandomizerPhase = document.getElementById('team-randomizer-phase');
+const randomizerBoard = document.getElementById('randomizer-board');
+const randomizeTeamBtn = document.getElementById('randomize-team-btn');
+const randomizerResult = document.getElementById('randomizer-result');
+const randomizerBackBtn = document.getElementById('randomizer-back-btn');
+// Team Randomizer state
+let randomizerTeams = [];
+let lastRandomizedIdx = null;
+// Confirm Teams button logic
+confirmTeamsBtn.onclick = function() {
+  resultsPhase.classList.add('hidden');
+  teamRandomizerPhase.classList.remove('hidden');
+  // Copy teams for randomizer
+  randomizerTeams = draftTeams.map(team => ({ ...team }));
+  lastRandomizedIdx = null;
+  renderRandomizerBoard();
+  randomizerResult.textContent = '';
+};
+
+function renderRandomizerBoard() {
+  randomizerBoard.innerHTML = '';
+  randomizerTeams.forEach((team, idx) => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '1rem';
+    div.style.background = (lastRandomizedIdx === idx)
+      ? 'linear-gradient(90deg, var(--accent) 60%, var(--primary-purple) 100%)'
+      : 'linear-gradient(90deg, var(--primary-blue) 60%, var(--primary-purple) 100%)';
+    div.style.color = '#fff';
+    div.style.borderRadius = '0.7rem';
+    div.style.padding = '0.7rem 1rem';
+    div.innerHTML = `<strong>${team.name}</strong>: ${team.members.join(', ')}`;
+    randomizerBoard.appendChild(div);
+  });
+}
+
+randomizeTeamBtn.onclick = function() {
+  if (randomizerTeams.length === 0) return;
+  const idx = Math.floor(Math.random() * randomizerTeams.length);
+  lastRandomizedIdx = idx;
+  renderRandomizerBoard();
+  randomizerResult.textContent = `Next up: ${randomizerTeams[idx].name}`;
+};
+
+randomizerBackBtn.onclick = function() {
+  teamRandomizerPhase.classList.add('hidden');
+  resultsPhase.classList.remove('hidden');
+};
 
 function renderResults() {
   resultsBoard.innerHTML = '';
