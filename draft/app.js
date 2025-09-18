@@ -276,8 +276,10 @@ startDraftBtn.onclick = function() {
 };
 
 // Results phase logic
+
 const resultsBoard = document.getElementById('results-board');
 const restartBtn = document.getElementById('restart-btn');
+const reshuffleBtn = document.getElementById('reshuffle-btn');
 
 function renderResults() {
   resultsBoard.innerHTML = '';
@@ -292,6 +294,14 @@ function renderResults() {
     resultsBoard.appendChild(div);
   });
 }
+
+
+reshuffleBtn.onclick = function() {
+  // Go back to draft phase and reshuffle using the same teams and participants
+  resultsPhase.classList.add('hidden');
+  draftPhase.classList.remove('hidden');
+  startDraft();
+};
 
 restartBtn.onclick = function() {
   // Reset all state and return to setup
