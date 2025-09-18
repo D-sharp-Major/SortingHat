@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.5" />
+  <title>Sorting Hat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Sorting Hat</h1>
+    <p style="margin-top:0.5rem; font-size:1.3rem;">Team Maker Draft Application</p>
+  </header>
+  <main>
+    <!-- Setup Phase -->
+    <section id="setup-phase">
+      <h2>Setup</h2>
+      <div style="margin-bottom:2rem;">
+        <h3>Teams</h3>
+        <form id="team-form" autocomplete="off" style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="team-name" placeholder="Team name" required minlength="1" style="flex:1;" />
+          <button type="submit" style="background:var(--primary-blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.5rem;">Add Team</button>
+        </form>
+        <ul id="team-list" style="list-style:none;padding:0;margin-top:1rem;"></ul>
+        <div id="team-error" style="color:var(--accent);margin-top:0.5rem;"></div>
+      </div>
+      <div style="margin-bottom:2rem;">
+        <h3>Participants</h3>
+        <form id="participant-form" autocomplete="off" style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="participant-name" placeholder="Participant name" required minlength="1" style="flex:1;" />
+          <button type="submit" style="background:var(--primary-purple);color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.5rem;">Add Participant</button>
+        </form>
+        <ul id="participant-list" style="list-style:none;padding:0;margin-top:1rem;"></ul>
+        <div id="participant-error" style="color:var(--accent);margin-top:0.5rem;"></div>
+      </div>
+      <button id="start-draft" style="background:linear-gradient(90deg,var(--primary-blue),var(--primary-purple));color:#fff;border:none;padding:0.75rem 2rem;border-radius:0.75rem;font-size:1.1rem;">Start Draft</button>
+      <div id="setup-validation-error" style="color:var(--accent);margin-top:1rem;"></div>
+    </section>
+    <!-- Draft Phase -->
+    <section id="draft-phase" class="hidden">
+  <h2>Draft</h2>
+  <div id="draft-board" style="margin-bottom:1.5rem;"></div>
+  <div id="draft-progress" style="margin-bottom:1rem;font-weight:bold;"></div>
+  <button id="next-pick" style="background:var(--primary-blue);color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:0.6rem;font-size:1rem;">Next Pick</button>
+  <div id="draft-error" style="color:var(--accent);margin-top:1rem;"></div>
+    </section>
+    <!-- Results Phase -->
+    <section id="results-phase" class="hidden">
+  <h2>Results</h2>
+  <div id="results-board" style="margin-bottom:2rem;"></div>
+  <button id="reshuffle-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Reshuffle Teams</button>
+  <button id="restart-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Restart</button>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
