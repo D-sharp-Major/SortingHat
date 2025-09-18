@@ -18,6 +18,9 @@ const participantError = document.getElementById('participant-error');
 const startDraftBtn = document.getElementById('start-draft');
 const setupValidationError = document.getElementById('setup-validation-error');
 
+const minTeamSizeInput = document.getElementById('min-team-size');
+const maxTeamSizeInput = document.getElementById('max-team-size');
+
 // Phase elements
 const setupPhase = document.getElementById('setup-phase');
 const draftPhase = document.getElementById('draft-phase');
@@ -164,7 +167,7 @@ function shuffle(array) {
   return array;
 }
 
-function startDraft() {
+function startDraft(minTeamSize, maxTeamSize) {
   // Copy state
   draftTeams = teams.map(name => ({ name, members: [] }));
   draftParticipants = [...participants];
@@ -174,20 +177,29 @@ function startDraft() {
   currentTeamIdx = 0;
   draftError.textContent = '';
 
-  // Calculate fair distribution
+  // Calculate fair distribution with constraints
   const numTeams = draftTeams.length;
   const numParticipants = draftParticipants.length;
-  const baseSize = Math.floor(numParticipants / numTeams);
-  const remainder = numParticipants % numTeams;
-  totalRounds = baseSize + (remainder > 0 ? 1 : 0);
-
+  // Calculate max for each team
+  let teamMaxes = Array(numTeams).fill(minTeamSize);
+  let left = numParticipants - minTeamSize * numTeams;
+  let t = 0;
+  while (left > 0) {
+    if (teamMaxes[t] < maxTeamSize) {
+      teamMaxes[t]++;
+      left--;
+    }
+    t = (t + 1) % numTeams;
+  }
   // Build team pick order for each round
-  for (let r = 0; r < totalRounds; r++) {
-    for (let t = 0; t < numTeams; t++) {
-      // Only allow teams to pick if they haven't reached their max
-      const maxForThisTeam = baseSize + (t < remainder ? 1 : 0);
-      if (draftTeams[t].members.length < maxForThisTeam) {
-        draftOrder.push(t);
+  let teamPicks = teamMaxes.map(max => max);
+  let picksLeft = numParticipants;
+  while (picksLeft > 0) {
+    for (let i = 0; i < numTeams; i++) {
+      if (teamPicks[i] > 0 && picksLeft > 0) {
+        draftOrder.push(i);
+        teamPicks[i]--;
+        picksLeft--;
       }
     }
   }
@@ -261,6 +273,8 @@ nextPickBtn.onclick = function() {
 // Start Draft button logic (validation, phase transition, and draft start)
 startDraftBtn.onclick = function() {
   setupValidationError.textContent = '';
+  const minTeamSize = parseInt(minTeamSizeInput.value, 10);
+  const maxTeamSize = parseInt(maxTeamSizeInput.value, 10);
   if (teams.length < 2) {
     setupValidationError.textContent = 'At least 2 teams are required.';
     return;
@@ -269,10 +283,189 @@ startDraftBtn.onclick = function() {
     setupValidationError.textContent = 'At least 2 participants are required.';
     return;
   }
+  if (minTeamSize < 1 || maxTeamSize < 1) {
+    setupValidationError.textContent = 'Team sizes must be at least 1.';
+    return;
+  }
+  if (minTeamSize > maxTeamSize) {
+    setupValidationError.textContent = 'Min team size cannot be greater than max team size.';
+    return;
+  }
+  const minPossible = Math.floor(participants.length / teams.length);
+  const maxPossible = Math.ceil(participants.length / teams.length);
+  if (minTeamSize > maxPossible) {
+    setupValidationError.textContent = `Too few participants for min team size (${minTeamSize}).`;
+    return;
+  }
+  if (maxTeamSize < minPossible) {
+    setupValidationError.textContent = `Too many participants for max team size (${maxTeamSize}).`;
+    return;
+  }
   // Hide setup, show draft
   setupPhase.classList.add('hidden');
   draftPhase.classList.remove('hidden');
+  startDraft(minTeamSize, maxTeamSize);
+};
+
+function startDraft(minTeamSize, maxTeamSize) {
+  // Copy state
+  draftTeams = teams.map(name => ({ name, members: [] }));
+  draftParticipants = [...participants];
+  draftAssignments = [];
+  draftOrder = [];
+  currentRound = 1;
+  currentTeamIdx = 0;
+  draftError.textContent = '';
+
+  // Calculate fair distribution with constraints
+  const numTeams = draftTeams.length;
+  const numParticipants = draftParticipants.length;
+  // Calculate max for each team
+  let teamMaxes = Array(numTeams).fill(minTeamSize);
+  let left = numParticipants - minTeamSize * numTeams;
+  let t = 0;
+  while (left > 0) {
+    if (teamMaxes[t] < maxTeamSize) {
+      teamMaxes[t]++;
+      left--;
+    }
+    t = (t + 1) % numTeams;
+  }
+  // Build team pick order for each round
+  let teamPicks = teamMaxes.map(max => max);
+  let picksLeft = numParticipants;
+  while (picksLeft > 0) {
+    for (let i = 0; i < numTeams; i++) {
+      if (teamPicks[i] > 0 && picksLeft > 0) {
+        draftOrder.push(i);
+        teamPicks[i]--;
+        picksLeft--;
+      }
+    }
+  }
+  shuffle(draftParticipants);
+  renderDraftBoard();
+  renderDraftProgress();
+  nextPickBtn.disabled = false;
+}
+
+// Results phase button handlers
+
+reshuffleBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  resultsPhase.classList.add('hidden');
+  draftPhase.classList.remove('hidden');
   startDraft();
+});
+
+exportTeamsBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  let text = 'Team Assignments\n\n';
+  draftTeams.forEach(team => {
+    text += team.name + ':\n';
+    if (team.members.length > 0) {
+      text += team.members.map(m => '  - ' + m).join('\n') + '\n';
+    } else {
+      text += '  (No members)\n';
+    }
+    text += '\n';
+  });
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'teams.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 0);
+});
+
+confirmTeamsBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  resultsPhase.classList.add('hidden');
+  teamRandomizerPhase.classList.remove('hidden');
+  // Copy teams for randomizer
+  randomizerTeams = draftTeams.map(team => ({ ...team }));
+  lastRandomizedIdx = null;
+  renderRandomizerBoard();
+  randomizerResult.textContent = '';
+});
+
+restartBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  draftPhase.classList.add('hidden');
+  resultsPhase.classList.add('hidden');
+  setupPhase.classList.remove('hidden');
+  teams = [];
+  participants = [];
+  editingTeamIndex = null;
+  editingParticipantIndex = null;
+  teamNameInput.value = '';
+  participantNameInput.value = '';
+  teamForm.querySelector('button[type="submit"]').textContent = 'Add Team';
+  participantForm.querySelector('button[type="submit"]').textContent = 'Add Participant';
+  teamError.textContent = '';
+  participantError.textContent = '';
+  setupValidationError.textContent = '';
+  renderTeams();
+  renderParticipants();
+});
+
+exportTeamsBtn.onclick = function() {
+  let text = 'Team Assignments\n\n';
+  draftTeams.forEach(team => {
+    text += team.name + ':\n';
+    if (team.members.length > 0) {
+      text += team.members.map(m => '  - ' + m).join('\n') + '\n';
+    } else {
+      text += '  (No members)\n';
+    }
+    text += '\n';
+  });
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'teams.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 0);
+};
+
+confirmTeamsBtn.onclick = function() {
+  resultsPhase.classList.add('hidden');
+  teamRandomizerPhase.classList.remove('hidden');
+  // Copy teams for randomizer
+  randomizerTeams = draftTeams.map(team => ({ ...team }));
+  lastRandomizedIdx = null;
+  renderRandomizerBoard();
+  randomizerResult.textContent = '';
+};
+
+restartBtn.onclick = function() {
+  // Reset all state and return to setup
+  draftPhase.classList.add('hidden');
+  resultsPhase.classList.add('hidden');
+  setupPhase.classList.remove('hidden');
+  teams = [];
+  participants = [];
+  editingTeamIndex = null;
+  editingParticipantIndex = null;
+  teamNameInput.value = '';
+  participantNameInput.value = '';
+  teamForm.querySelector('button[type="submit"]').textContent = 'Add Team';
+  participantForm.querySelector('button[type="submit"]').textContent = 'Add Participant';
+  teamError.textContent = '';
+  participantError.textContent = '';
+  setupValidationError.textContent = '';
+  renderTeams();
+  renderParticipants();
 };
 
 // Results phase logic
@@ -281,6 +474,31 @@ const resultsBoard = document.getElementById('results-board');
 const restartBtn = document.getElementById('restart-btn');
 const reshuffleBtn = document.getElementById('reshuffle-btn');
 const confirmTeamsBtn = document.getElementById('confirm-teams-btn');
+const exportTeamsBtn = document.getElementById('export-teams-btn');
+// Export Teams button logic
+exportTeamsBtn.onclick = function() {
+  let text = 'Team Assignments\n\n';
+  draftTeams.forEach(team => {
+    text += team.name + ':\n';
+    if (team.members.length > 0) {
+      text += team.members.map(m => '  - ' + m).join('\n') + '\n';
+    } else {
+      text += '  (No members)\n';
+    }
+    text += '\n';
+  });
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'teams.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 0);
+};
 
 // Team Randomizer phase elements
 const teamRandomizerPhase = document.getElementById('team-randomizer-phase');
