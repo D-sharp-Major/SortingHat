@@ -33,6 +33,12 @@
         <ul id="participant-list" style="list-style:none;padding:0;margin-top:1rem;"></ul>
         <div id="participant-error" style="color:var(--accent);margin-top:0.5rem;"></div>
       </div>
+      <div style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center;">
+        <label for="min-team-size" style="font-weight:bold;">Min Team Size:</label>
+        <input type="number" id="min-team-size" min="1" value="1" style="width:4rem;" />
+        <label for="max-team-size" style="font-weight:bold;">Max Team Size:</label>
+        <input type="number" id="max-team-size" min="1" value="10" style="width:4rem;" />
+      </div>
       <button id="start-draft" style="background:linear-gradient(90deg,var(--primary-blue),var(--primary-purple));color:#fff;border:none;padding:0.75rem 2rem;border-radius:0.75rem;font-size:1.1rem;">Start Draft</button>
       <div id="setup-validation-error" style="color:var(--accent);margin-top:1rem;"></div>
     </section>
@@ -46,19 +52,20 @@
     </section>
     <!-- Results Phase -->
     <section id="results-phase" class="hidden">
-  <h2>Results</h2>
-  <div id="results-board" style="margin-bottom:2rem;"></div>
-  <button id="reshuffle-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Reshuffle Teams</button>
-  <button id="confirm-teams-btn" style="background:var(--accent);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Confirm Teams</button>
-  <button id="restart-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Restart</button>
-  <!-- Team Randomizer Phase -->
-  <section id="team-randomizer-phase" class="hidden">
-    <h2>Team Randomizer</h2>
-    <div id="randomizer-board" style="margin-bottom:2rem;"></div>
-    <button id="randomize-team-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Randomize Next Team</button>
-    <div id="randomizer-result" style="margin-top:1.5rem;font-size:1.2rem;font-weight:bold;"></div>
-    <button id="randomizer-back-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.5rem 1.5rem;border-radius:0.7rem;font-size:1rem;margin-top:2rem;">Back to Results</button>
-  </section>
+      <h2>Results</h2>
+      <div id="results-board" style="margin-bottom:2rem;"></div>
+      <button id="reshuffle-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Reshuffle Teams</button>
+      <button id="export-teams-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Export Teams</button>
+      <button id="confirm-teams-btn" style="background:var(--accent);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;margin-right:1rem;">Confirm Teams</button>
+      <button id="restart-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Restart</button>
+    </section>
+    <!-- Team Randomizer Phase (now a sibling, not nested) -->
+    <section id="team-randomizer-phase" class="hidden">
+      <h2>Team Randomizer</h2>
+      <div id="randomizer-board" style="margin-bottom:2rem;"></div>
+      <button id="randomize-team-btn" style="background:var(--primary-blue);color:#fff;border:none;padding:0.7rem 2rem;border-radius:0.7rem;font-size:1.1rem;">Randomize Next Team</button>
+      <div id="randomizer-result" style="margin-top:1.5rem;font-size:1.2rem;font-weight:bold;"></div>
+      <button id="randomizer-back-btn" style="background:var(--primary-purple);color:#fff;border:none;padding:0.5rem 1.5rem;border-radius:0.7rem;font-size:1rem;margin-top:2rem;">Back to Results</button>
     </section>
   </main>
   <script src="app.js"></script>
