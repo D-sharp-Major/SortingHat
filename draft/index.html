@@ -1,25 +1,3 @@
- // Phase elements
-  const setupPhase = document.getElementById('setup-phase');
-  const draftPhase = document.getElementById('draft-phase');
-  const resultsPhase = document.getElementById('results-phase');
-
-    // Start Draft button logic
-    startDraftBtn.onclick = function() {
-      setupValidationError.textContent = '';
-      if (teams.length < 2) {
-        setupValidationError.textContent = 'At least 2 teams are required.';
-        return;
-      }
-      if (participants.length < 2) {
-        setupValidationError.textContent = 'At least 2 participants are required.';
-        return;
-      }
-      // Hide setup, show draft
-      setupPhase.classList.add('hidden');
-      draftPhase.classList.remove('hidden');
-      // (Draft logic will be added here in the next step)
-    };
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
